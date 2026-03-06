@@ -205,6 +205,9 @@ export function setAvatarVisibility(visible) {
     if (avatarModel) {
         avatarModel.visible = visible;
     }
+
+    // Also toggle the debug spheres and labels visibility immediately
+    updateDebugVisuals();
 }
 
 // Global math instances for performance

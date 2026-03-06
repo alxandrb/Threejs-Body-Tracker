@@ -16,7 +16,8 @@ import {
   jointMesh, boneMesh, glowMesh,
   jointMat, boneMat,
   updateJointInstances,
-  updateBoneInstances
+  updateBoneInstances,
+  updateJointLabels
 } from './body.js';
 import { captureFrame } from './recording.js';
 import { applyAvatarPose, isAvatarVisible } from './avatar.js';
@@ -168,10 +169,15 @@ function loop(now) {
     glowMesh.visible = opts.particles && !isAvatarVisible;
 
     applyAvatarPose(smoothPos);
+
+    // Show wireframe joint labels if wireframe is active
+    updateJointLabels(camera, opts.wire);
   } else {
     jointMesh.visible = false;
     boneMesh.visible = false;
     glowMesh.visible = false;
+
+    updateJointLabels(camera, false);
   }
 
   updateCamera();

@@ -11,7 +11,7 @@
  */
 
 /* global THREE */
-import { NJ, NC, CONNECTIONS, TIPS } from './config.js';
+import { NJ, NC, CONNECTIONS, TIPS, LANDMARK_NAMES } from './config.js';
 import { smoothPos } from './smoothing.js';
 
 // ─── Colours ───────────────────────────────────────────────────────
@@ -143,4 +143,61 @@ export function updateBoneInstances() {
   }
 
   boneMesh.instanceMatrix.needsUpdate = true;
+}
+
+// ─── Joint Labels (Wireframe mode) ──────────────────────────────────
+const jointLabels = [];
+for (let i = 0; i < NJ; i++) {
+  const lbl = document.createElement('div');
+  lbl.textContent = `[${i}] ${LANDMARK_NAMES[i]}`;
+  lbl.style.position = 'absolute';
+  lbl.style.color = '#00ff41';
+  lbl.style.fontFamily = 'monospace';
+  lbl.style.fontSize = '10px';
+  lbl.style.pointerEvents = 'none';
+  lbl.style.display = 'none';
+  lbl.style.textShadow = '1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000';
+  lbl.style.transform = 'translate(-50%, -50%)'; // center exactly on joint
+
+  document.body.appendChild(lbl);
+  jointLabels.push(lbl);
+}
+
+const _lblPos = new THREE.Vector3();
+
+export function updateJointLabels(camera, isVisible) {
+  if (!isVisible) {
+    for (let i = 0; i < NJ; i++) {
+      if (jointLabels[i].style.display !== 'none') {
+        jointLabels[i].style.display = 'none';
+      }
+    }
+    return;
+  }
+
+  for (let i = 0; i < NJ; i++) {
+    const p = smoothPos[i];
+    if (!p) continue;
+
+    // We must get the world position incorporating the jointMesh's matrixWorld if the scene was transformed
+    // but here jointMesh is at 0,0,0 so raw positions are world positions.
+    _lblPos.set(p.x, p.y, p.z);
+
+    // Project returns coordinates in range [-1, 1] relative to the camera frustum
+    _lblPos.project(camera);
+
+    // If z > 1, the point is behind the camera
+    if (_lblPos.z > 1) {
+      jointLabels[i].style.display = 'none';
+      continue;
+    }
+
+    // Convert normalized device coordinates [-1, +1] to screen CSS coordinates [0, width/height]
+    const x = (_lblPos.x + 1) / 2 * window.innerWidth;
+    const y = -(_lblPos.y - 1) / 2 * window.innerHeight;
+
+    jointLabels[i].style.display = 'block';
+    jointLabels[i].style.left = `${x}px`;
+    jointLabels[i].style.top = `${y}px`;
+  }
 }
