@@ -8,35 +8,34 @@ import { scene } from './renderer.js';
 
 export let isAvatarVisible = true;
 export let avatarModel = null;
-const boneMap = {}; // Maps logical names (e.g., 'LeftArm') to THREE.Bone instances
+const boneMap = {}; // Maps MediaPipe index (e.g., 13) to THREE.Bone instances
 const initialBinds = {}; // Stores initial quaternions to compute relative transforms
+const debugSpheres = {}; // Visual debugging spheres for each mapped bone
+const debugLabels = {};  // HTML div labels for each mapped bone
 
-// Basic dictionary to find bones by common naming conventions
-const BONE_NAMES = {
-    Hips: ['hips', 'pelvis', 'root', 'mixamorig:hips'],
-    Spine: ['spine', 'chest', 'torso', 'mixamorig:spine'],
-    Spine1: ['spine1', 'spine_1', 'chest1', 'mixamorig:spine1'],
-    Spine2: ['spine2', 'spine_2', 'chest2', 'mixamorig:spine2'],
-    Neck: ['neck', 'mixamorig:neck'],
-    Head: ['head', 'mixamorig:head'],
-
-    LeftShoulder: ['leftshoulder', 'shoulder_l', 'l_shoulder', 'mixamorig:leftshoulder'],
-    LeftArm: ['leftarm', 'arm_l', 'l_arm', 'bicep_l', 'mixamorig:leftarm'],
-    LeftForeArm: ['leftforearm', 'forearm_l', 'l_forearm', 'elbow_l', 'mixamorig:leftforearm'],
-    LeftHand: ['lefthand', 'hand_l', 'l_hand', 'wrist_l', 'mixamorig:lefthand'],
-
-    RightShoulder: ['rightshoulder', 'shoulder_r', 'r_shoulder', 'mixamorig:rightshoulder'],
-    RightArm: ['rightarm', 'arm_r', 'r_arm', 'bicep_r', 'mixamorig:rightarm'],
-    RightForeArm: ['rightforearm', 'forearm_r', 'r_forearm', 'elbow_r', 'mixamorig:rightforearm'],
-    RightHand: ['righthand', 'hand_r', 'r_hand', 'wrist_r', 'mixamorig:righthand'],
-
-    LeftUpLeg: ['leftupleg', 'upleg_l', 'l_upleg', 'thigh_l', 'mixamorig:leftupleg'],
-    LeftLeg: ['leftleg', 'leg_l', 'l_leg', 'calf_l', 'mixamorig:leftleg'],
-    LeftFoot: ['leftfoot', 'foot_l', 'l_foot', 'ankle_l', 'mixamorig:leftfoot'],
-
-    RightUpLeg: ['rightupleg', 'upleg_r', 'r_upleg', 'thigh_r', 'mixamorig:rightupleg'],
-    RightLeg: ['rightleg', 'leg_r', 'r_leg', 'calf_r', 'mixamorig:rightleg'],
-    RightFoot: ['rightfoot', 'foot_r', 'r_foot', 'ankle_r', 'mixamorig:rightfoot']
+// Exact mapping provided by the user (Blender Metarig -> MediaPipe Index)
+const METARIG_MAPPING = {
+    "0": "spine.006",
+    "7": "ear.L",
+    "8": "ear.R",
+    "11": "shoulder.L",
+    "12": "shoulder.R",
+    "13": "upper_arm.L",
+    "14": "upper_arm.R",
+    "15": "forearm.L",
+    "16": "forearm.R",
+    "19": "hand.L",
+    "20": "hand.R",
+    "23": "pelvis.L",
+    "24": "pelvis.R",
+    "25": "thigh.L",
+    "26": "thigh.R",
+    "27": "shin.L",
+    "28": "shin.R",
+    "29": "foot.L",
+    "30": "foot.R",
+    "31": "toe.L",
+    "32": "toe.R"
 };
 
 /**
@@ -49,16 +48,38 @@ function mapBones(gltfScene) {
 
     gltfScene.traverse((child) => {
         if (child.isBone) {
-            const bname = child.name.toLowerCase();
+            const bname = child.name; // Keep exact casing first, fallback to stripped
+            const strippedName = bname.replace(/\./g, ''); // E.g., upper_arm.L -> upper_armL
 
-            // Check which logical bone this matches
-            for (const [logicalName, synonyms] of Object.entries(BONE_NAMES)) {
-                if (!boneMap[logicalName]) {
-                    const match = synonyms.find(s => bname.includes(s));
-                    if (match) {
-                        boneMap[logicalName] = child;
-                        initialBinds[logicalName] = child.quaternion.clone();
-                        console.log(`Mapped [${logicalName}] -> ${child.name}`);
+            for (const [mpIndex, targetName] of Object.entries(METARIG_MAPPING)) {
+                if (!boneMap[mpIndex]) {
+                    // Match EXACT user-provided string or the stripped variant
+                    if (bname === targetName || strippedName === targetName.replace(/\./g, '')) {
+                        boneMap[mpIndex] = child;
+                        initialBinds[mpIndex] = child.quaternion.clone();
+                        console.log(`Mapped MP Index [${mpIndex}] -> ${child.name}`);
+
+                        // Visual Debugger: Create a red sphere at the bone
+                        const sphereGeom = new THREE.SphereGeometry(0.05, 16, 16);
+                        const sphereMat = new THREE.MeshBasicMaterial({ color: 0xff0000, depthTest: false, transparent: true, opacity: 0.8 });
+                        const sphereMesh = new THREE.Mesh(sphereGeom, sphereMat);
+                        sphereMesh.renderOrder = 999; // Draw on top
+                        scene.add(sphereMesh);
+                        debugSpheres[mpIndex] = sphereMesh;
+
+                        // HTML Label
+                        const lbl = document.createElement('div');
+                        lbl.textContent = `[${mpIndex}] ${child.name}`;
+                        lbl.style.position = 'absolute';
+                        lbl.style.color = '#ff0000';
+                        lbl.style.fontFamily = 'monospace';
+                        lbl.style.fontWeight = 'bold';
+                        lbl.style.textShadow = '1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000';
+                        lbl.style.pointerEvents = 'none';
+                        lbl.style.zIndex = '9999';
+                        document.body.appendChild(lbl);
+                        debugLabels[mpIndex] = lbl;
+
                         break;
                     }
                 }
@@ -202,9 +223,9 @@ function getVec3(out, buf, index) {
     return out;
 }
 
-// Applies rotation from parent->child vector to target bone
-function applyBoneRotation(boneName, p1Idx, p2Idx, buf) {
-    const bone = boneMap[boneName];
+// Applies rotation from parent->child vector to target bone using strict indices
+function applyBoneRotation(boneIndex, p1Idx, p2Idx, buf) {
+    const bone = boneMap[boneIndex];
     if (!bone) return;
 
     getVec3(v0, buf, p1Idx); // Parent
@@ -215,16 +236,6 @@ function applyBoneRotation(boneName, p1Idx, p2Idx, buf) {
     if (v1.lengthSq() < 0.0001) return; // Guard against NaN
     v1.normalize();
 
-    // THREE.js Y-up assumption vs Mixamo bones. 
-    // We align the bone's Y-axis (or another axis based on initial rigging) 
-    // towards the new target vector.
-    // We use lookAt behavior or setFromUnitVectors.
-
-    // In a standard T-pose, the left arm points along +X, right along -X, etc.
-    // We simplify by creating a quaternion from an implicit up vector.
-    // For production quality, one should use Inverse Kinematics (CCD), but 
-    // direct forward kinematics works well enough for simple tracking.
-
     // Reference vector (assuming bones grow along Y in local space)
     const up = new THREE.Vector3(0, -1, 0); // Assuming MediaPipe Y is down
 
@@ -232,25 +243,68 @@ function applyBoneRotation(boneName, p1Idx, p2Idx, buf) {
     bone.quaternion.slerp(q0, 0.5); // Smooth apply
 }
 
+import { camera } from './renderer.js';
+const _worldPos = new THREE.Vector3();
+
+// Updates 2D HTML labels to stick to the 3D bones
+function updateDebugVisuals() {
+    for (const [mpIndex, bone] of Object.entries(boneMap)) {
+        if (!isAvatarVisible) {
+            if (debugSpheres[mpIndex]) debugSpheres[mpIndex].visible = false;
+            if (debugLabels[mpIndex]) debugLabels[mpIndex].style.display = 'none';
+            continue;
+        }
+
+        bone.getWorldPosition(_worldPos);
+
+        // Update red 3D sphere
+        if (debugSpheres[mpIndex]) {
+            debugSpheres[mpIndex].visible = true;
+            debugSpheres[mpIndex].position.copy(_worldPos);
+        }
+
+        // Project 3D vector to 2D screen coordinates for the HTML label
+        _worldPos.project(camera);
+
+        const x = (_worldPos.x * .5 + .5) * window.innerWidth;
+        const y = (_worldPos.y * -.5 + .5) * window.innerHeight;
+
+        if (debugLabels[mpIndex]) {
+            // Hide if behind camera
+            if (_worldPos.z > 1) {
+                debugLabels[mpIndex].style.display = 'none';
+            } else {
+                debugLabels[mpIndex].style.display = 'block';
+                debugLabels[mpIndex].style.left = `${x}px`;
+                debugLabels[mpIndex].style.top = `${y}px`;
+            }
+        }
+    }
+}
+
 export function applyAvatarPose(smoothBuf) {
     if (!avatarModel || !isAvatarVisible) return;
 
-    // Map MediaPipe indices to standard humanoid bones:
-    // 11: Left Shoulder, 13: Left Elbow, 15: Left Wrist
-    applyBoneRotation('LeftArm', 11, 13, smoothBuf);
-    applyBoneRotation('LeftForeArm', 13, 15, smoothBuf);
+    // Direct mapping to the exact keys requested:
+    // Left Arm (Shoulder -> Elbow) via upper_arm.L (13)
+    applyBoneRotation('13', 11, 13, smoothBuf);
+    // Left Forearm (Elbow -> Wrist) via forearm.L (15)
+    applyBoneRotation('15', 13, 15, smoothBuf);
 
-    // 12: Right Shoulder, 14: Right Elbow, 16: Right Wrist 
-    applyBoneRotation('RightArm', 12, 14, smoothBuf);
-    applyBoneRotation('RightForeArm', 14, 16, smoothBuf);
+    // Right Arm (Shoulder -> Elbow) via upper_arm.R (14)
+    applyBoneRotation('14', 12, 14, smoothBuf);
+    // Right Forearm (Elbow -> Wrist) via forearm.R (16)
+    applyBoneRotation('16', 14, 16, smoothBuf);
 
-    // 23: Left Hip, 25: Left Knee, 27: Left Ankle
-    applyBoneRotation('LeftUpLeg', 23, 25, smoothBuf);
-    applyBoneRotation('LeftLeg', 25, 27, smoothBuf);
+    // Left Leg (Hip -> Knee) via thigh.L (25)
+    applyBoneRotation('25', 23, 25, smoothBuf);
+    // Left Lower Leg (Knee -> Ankle) via shin.L (27)
+    applyBoneRotation('27', 25, 27, smoothBuf);
 
-    // 24: Right Hip, 26: Right Knee, 28: Right Ankle
-    applyBoneRotation('RightUpLeg', 24, 26, smoothBuf);
-    applyBoneRotation('RightLeg', 26, 28, smoothBuf);
+    // Right Leg (Hip -> Knee) via thigh.R (26)
+    applyBoneRotation('26', 24, 26, smoothBuf);
+    // Right Lower Leg (Knee -> Ankle) via shin.R (28)
+    applyBoneRotation('28', 26, 28, smoothBuf);
 
     // Spine & Head 
     // MediaPipe: 0 is Nose, 11/12 are shoulders
@@ -263,7 +317,7 @@ export function applyAvatarPose(smoothBuf) {
     getVec3(q0, smoothBuf, 24); // repurpose q0 vector temporarily
     v1.add(q0).multiplyScalar(0.5); // Mid-hip
 
-    const spine = boneMap['Spine'] || boneMap['Hips'];
+    const spine = boneMap['0']; // Head/Spine depending on exact mapping
     if (spine) {
         v0.sub(v1); // Hip to Shoulder
         if (v0.lengthSq() > 0.0001) {
@@ -273,4 +327,6 @@ export function applyAvatarPose(smoothBuf) {
             spine.quaternion.slerp(q0, 0.2);
         }
     }
+
+    updateDebugVisuals();
 }

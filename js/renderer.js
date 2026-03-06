@@ -43,7 +43,49 @@ export const camera = new THREE.PerspectiveCamera(
   0.01,
   100,
 );
-camera.position.set(0, 1.2, 3.5);
+const camBasePos = new THREE.Vector3(0, 1.2, 3.5);
+camera.position.copy(camBasePos);
+
+// ─── Keyboard Camera Controls (WASD + FPS Mouse) ───────────────────────────────
+const keys = { w: false, a: false, s: false, d: false, q: false, e: false };
+window.addEventListener('keydown', (e) => {
+  const k = e.key.toLowerCase();
+  if (keys.hasOwnProperty(k)) keys[k] = true;
+});
+window.addEventListener('keyup', (e) => {
+  const k = e.key.toLowerCase();
+  if (keys.hasOwnProperty(k)) keys[k] = false;
+});
+
+let isDragging = false;
+let previousMousePosition = { x: 0, y: 0 };
+let camRotX = 0; // Pitch
+let camRotY = 0; // Yaw
+
+window.addEventListener('mousedown', (e) => {
+  isDragging = true;
+  previousMousePosition = { x: e.offsetX, y: e.offsetY };
+});
+window.addEventListener('mouseup', () => isDragging = false);
+window.addEventListener('mouseleave', () => isDragging = false);
+window.addEventListener('mousemove', (e) => {
+  if (isDragging && state.detected) {
+    const deltaMove = {
+      x: e.offsetX - previousMousePosition.x,
+      y: e.offsetY - previousMousePosition.y
+    };
+
+    camRotY -= deltaMove.x * 0.005; // Left/Right (Yaw)
+    camRotX -= deltaMove.y * 0.005; // Up/Down (Pitch)
+
+    // Clamp pitch to prevent flipping upside down
+    camRotX = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, camRotX));
+
+    camera.quaternion.setFromEuler(new THREE.Euler(camRotX, camRotY, 0, 'YXZ'));
+
+    previousMousePosition = { x: e.offsetX, y: e.offsetY };
+  }
+});
 
 // ─── Lights ────────────────────────────────────────────────────────
 scene.add(new THREE.AmbientLight(0x112233, 1.0));
@@ -68,12 +110,28 @@ const gridHelper = new THREE.GridHelper(10, 20, 0x00ff41, 0x005511);
 gridHelper.position.set(0, 0, 0); // Center of the world
 scene.add(gridHelper);
 
-// ─── Idle camera drift (no body detected) ──────────────────────────
+// ─── Camera movement ─────────────────────────────────────────────────
 let _t = 0;
 
-function driftCamera() {
-  camera.position.x = Math.sin(_t * 0.3) * 0.05;
-  camera.position.y = 1.2 + Math.cos(_t * 0.2) * 0.03;
+function updateCamera() {
+  const speed = 0.05;
+
+  if (state.detected) {
+    if (keys.w) camera.translateZ(-speed); // Forward (FPS)
+    if (keys.s) camera.translateZ(speed);  // Backward
+    if (keys.a) camera.translateX(-speed); // Strafe Left
+    if (keys.d) camera.translateX(speed);  // Strafe Right
+    if (keys.q) camera.position.y -= speed; // Down
+    if (keys.e) camera.position.y += speed; // Up
+
+    // Save new position so drift knows where to return
+    camBasePos.copy(camera.position);
+  } else {
+    camera.position.x = camBasePos.x + Math.sin(_t * 0.3) * 0.05;
+    camera.position.y = camBasePos.y + Math.cos(_t * 0.2) * 0.03;
+    camera.position.z = camBasePos.z;
+    camera.lookAt(0, 0, 0); // Keep looking at center while drifting
+  }
 }
 
 // ─── Pulse effect ───────────────────────────────────────────────────
@@ -111,15 +169,15 @@ function loop(now) {
 
     applyAvatarPose(smoothPos);
   } else {
-    driftCamera();
     jointMesh.visible = false;
     boneMesh.visible = false;
     glowMesh.visible = false;
   }
 
+  updateCamera();
+
   if (opts.pulse) applyPulse();
 
-  camera.lookAt(0, 0, 0);
   renderer.render(scene, camera);
 }
 
