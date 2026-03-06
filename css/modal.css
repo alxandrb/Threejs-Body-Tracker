@@ -1,0 +1,133 @@
+/* ─── Modal overlay ───────────────────────────────────────────────── */
+#emodal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(5, 10, 15, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+#emodal.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* ─── Modal box ───────────────────────────────────────────────────── */
+#ebox {
+  width: 440px;
+  background: rgba(4, 12, 18, 0.99);
+  border: 1px solid rgba(0, 255, 136, 0.28);
+  box-shadow: 0 0 60px rgba(0, 255, 136, 0.08);
+  padding: 26px 28px 22px;
+}
+
+#ebox h2 {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 17px;
+  letter-spacing: 6px;
+  color: var(--green);
+  text-shadow: 0 0 18px var(--green);
+  margin-bottom: 5px;
+  text-transform: uppercase;
+}
+
+#ebox > p {
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: rgba(0, 255, 231, 0.35);
+  margin-bottom: 18px;
+  line-height: 1.8;
+}
+
+/* ─── Stats list ──────────────────────────────────────────────────── */
+#ebox dl { border-top: 1px solid rgba(0, 255, 231, 0.05); }
+
+.es {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(0, 255, 231, 0.05);
+}
+
+.es dt {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: rgba(0, 255, 231, 0.38);
+  text-transform: uppercase;
+}
+
+.es dd {
+  font-size: 10px;
+  color: var(--cyan);
+}
+
+/* ─── File list ───────────────────────────────────────────────────── */
+.fl { margin: 12px 0 0; }
+
+.fi {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 9px;
+  background: rgba(0, 255, 231, 0.02);
+  border: 1px solid rgba(0, 255, 231, 0.06);
+  margin-bottom: 4px;
+}
+
+.fn {
+  font-size: 10px;
+  color: rgba(0, 255, 231, 0.65);
+  letter-spacing: 1px;
+}
+
+.fd {
+  font-size: 8px;
+  color: rgba(0, 255, 231, 0.28);
+  letter-spacing: 1px;
+  margin-top: 1px;
+}
+
+/* ─── Action buttons ──────────────────────────────────────────────── */
+.ma {
+  display: flex;
+  gap: 9px;
+  margin-top: 18px;
+}
+
+.mb {
+  flex: 1;
+  padding: 9px 0;
+  text-align: center;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 3px;
+  cursor: pointer;
+  text-transform: uppercase;
+  background: transparent;
+  transition: background 0.18s, box-shadow 0.18s;
+}
+
+.mb.p {
+  border: 1px solid rgba(0, 255, 136, 0.45);
+  color: var(--green);
+}
+
+.mb.p:hover {
+  background: rgba(0, 255, 136, 0.07);
+  box-shadow: 0 0 12px rgba(0, 255, 136, 0.15);
+}
+
+.mb.s {
+  border: 1px solid rgba(0, 255, 231, 0.18);
+  color: rgba(0, 255, 231, 0.38);
+}
+
+.mb.s:hover {
+  border-color: rgba(0, 255, 231, 0.5);
+  color: var(--cyan);
+}

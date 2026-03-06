@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Body Tracking 3D</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/ui.css">
+  <link rel="stylesheet" href="css/settings.css">
+  <link rel="stylesheet" href="css/record.css">
+  <link rel="stylesheet" href="css/modal.css">
+</head>
+
+<body>
+
+  <!-- ─── Loading screen ─────────────────────────────────────────── -->
+  <div id="ls">
+    <div class="lt">BODY.TRACK</div>
+    <div class="lbw">
+      <div class="lb" id="lb"></div>
+    </div>
+    <div class="lm" id="lm">INITIALIZING...</div>
+  </div>
+
+  <!-- ─── Canvas + video feed ────────────────────────────────────── -->
+  <canvas id="c"></canvas>
+  <video id="video" autoplay muted playsinline></video>
+
+  <!-- ─── Top UI ──────────────────────────────────────────────────── -->
+  <header id="top">
+    <div id="title">BODY<span class="acc">.</span>TRACK <span class="acc">3D</span></div>
+    <div id="status-panel">
+      <div><span class="dot" id="d-cam"></span>CAMERA</div>
+      <div><span class="dot" id="d-mp"></span>MEDIAPIPE</div>
+      <div><span class="dot" id="d-hand"></span>BODY DETECTED</div>
+      <div id="d-status">LOADING...</div>
+    </div>
+  </header>
+
+  <div id="fps">-- FPS</div>
+
+  <!-- ─── Settings ───────────────────────────────────────────────── -->
+  <button id="sbtn" aria-label="Toggle settings">⚙ SETTINGS</button>
+
+  <div id="spanel" role="dialog" aria-label="Settings">
+    <div class="pi">
+
+      <section class="ps">
+        <h3 class="sl">Motion</h3>
+        <div class="sr">
+          <div class="sh">
+            <span class="sll">Smoothing</span>
+            <span class="sv" id="sv-sm">LOW</span>
+          </div>
+          <div class="sw">
+            <div class="st"></div>
+            <div class="sf" id="sf-sm" style="width:18%"></div>
+            <input type="range" id="sl-sm" min="0.02" max="1.0" step="0.01" value="0.18" aria-label="Smoothing">
+          </div>
+        </div>
+        <div class="sr" style="margin-top:9px">
+          <div class="sh">
+            <span class="sll">Scale</span>
+            <span class="sv" id="sv-sc">2.50</span>
+          </div>
+          <div class="sw">
+            <div class="st"></div>
+            <div class="sf" id="sf-sc" style="width:35%"></div>
+            <input type="range" id="sl-sc" min="0.5" max="5.0" step="0.05" value="2.50" aria-label="Scale">
+          </div>
+        </div>
+      </section>
+
+      <section class="ps">
+        <h3 class="sl">Visibility</h3>
+        <label class="or"><span class="ol">Joints</span>
+          <span class="tog"><input type="checkbox" id="t-jo" checked><span class="tt"></span></span>
+        </label>
+        <label class="or"><span class="ol">Bones</span>
+          <span class="tog"><input type="checkbox" id="t-bo" checked><span class="tt"></span></span>
+        </label>
+        <label class="or"><span class="ol">Fingertip Highlights</span>
+          <span class="tog"><input type="checkbox" id="t-ti" checked><span class="tt"></span></span>
+        </label>
+        <label class="or"><span class="ol">Particles</span>
+          <span class="tog"><input type="checkbox" id="t-pa" checked><span class="tt"></span></span>
+        </label>
+        <label class="or"><span class="ol">Camera Feed</span>
+          <span class="tog"><input type="checkbox" id="t-ca" checked><span class="tt"></span></span>
+        </label>
+      </section>
+
+      <section class="ps">
+        <h3 class="sl">Effects</h3>
+        <label class="or"><span class="ol">Pulse Animation</span>
+          <span class="tog"><input type="checkbox" id="t-pu" checked><span class="tt"></span></span>
+        </label>
+        <label class="or"><span class="ol">Wireframe Bones</span>
+          <span class="tog"><input type="checkbox" id="t-wi"><span class="tt"></span></span>
+        </label>
+      </section>
+
+      <section class="ps">
+        <h3 class="sl">Performance</h3>
+        <div class="sr">
+          <div class="sh">
+            <span class="sll">MediaPipe Rate</span>
+            <span class="sv" id="sv-mp">20fps</span>
+          </div>
+          <div class="sw">
+            <div class="st"></div>
+            <div class="sf" id="sf-mp" style="width:37%"></div>
+            <input type="range" id="sl-mp" min="5" max="30" step="1" value="20" aria-label="MediaPipe rate">
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- ─── Record panel ────────────────────────────────────────────── -->
+  <aside id="rpanel">
+    <div id="rh">
+      <span id="rt">● RECORD</span>
+      <span id="rs"><span id="rd"></span><span id="rst">READY</span></span>
+    </div>
+    <div id="rb">
+      <div id="dr">
+        <button class="db active" data-sec="5">5s</button>
+        <button class="db" data-sec="10">10s</button>
+        <button class="db" data-sec="15">15s</button>
+        <button class="db" data-sec="30">30s</button>
+        <button class="db" data-sec="0">∞</button>
+      </div>
+      <div id="rpw">
+        <div id="rpb"></div>
+      </div>
+      <div id="ri">
+        <div id="rtimer">00:00</div>
+        <div id="rfi">
+          <div id="rfc">0 FRAMES</div>
+          <div id="rfps">~ fps</div>
+        </div>
+      </div>
+      <button class="rbtn" id="recbtn">⏺ START RECORDING</button>
+      <button class="rbtn" id="expbtn">⬇ EXPORT FOR BLENDER</button>
+      <p id="rhint">Render: 60fps | MediaPipe: adjustable<br>Exports ZIP with Blender .py script</p>
+    </div>
+  </aside>
+
+  <!-- ─── Export modal ────────────────────────────────────────────── -->
+  <div id="emodal" role="dialog" aria-modal="true" aria-label="Export">
+    <div id="ebox">
+      <h2>EXPORT READY</h2>
+      <p>ZIP CONTAINS JSON + BLENDER PYTHON SCRIPT.<br>DRAG .PY INTO SCRIPTING EDITOR AND RUN IT.</p>
+      <dl>
+        <div class="es">
+          <dt>DURATION</dt>
+          <dd id="ex-d">-</dd>
+        </div>
+        <div class="es">
+          <dt>FRAMES</dt>
+          <dd id="ex-f">-</dd>
+        </div>
+        <div class="es">
+          <dt>FPS</dt>
+          <dd id="ex-fps">-</dd>
+        </div>
+        <div class="es">
+          <dt>LANDMARKS</dt>
+          <dd>33 / frame</dd>
+        </div>
+      </dl>
+      <ul class="fl">
+        <li class="fi">
+          <span>📄</span>
+          <div>
+            <div class="fn">body_animation.json</div>
+            <div class="fd">Positions + timestamps</div>
+          </div>
+        </li>
+        <li class="fi">
+          <span>🐍</span>
+          <div>
+            <div class="fn">import_body_blender.py</div>
+            <div class="fd">Run in Blender → keyframed empties</div>
+          </div>
+        </li>
+      </ul>
+      <div class="ma">
+        <button class="mb p" id="dlbtn">⬇ DOWNLOAD ZIP</button>
+        <button class="mb s" id="closebtn">CLOSE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Bottom bar ──────────────────────────────────────────────── -->
+  <footer id="bar">
+    <span>LM: <span id="b-lm">0</span>/33</span>
+    <span><span id="b-fi"></span></span>
+    <span>BODY: <span id="b-ha">-</span></span>
+    <span>SMOOTH: <span id="b-sm">LOW</span></span>
+    <span class="hint">POINT CAMERA AT YOUR BODY</span>
+  </footer>
+
+  <!-- ─── External libs (globals: THREE, JSZip, Hands) ───────────── -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5.1675469404/pose.js" crossorigin="anonymous"></script>
+
+  <!-- ─── App entry point (ES module, deferred automatically) ─────── -->
+  <script type="module" src="js/main.js"></script>
+
+</body>
+
+</html>

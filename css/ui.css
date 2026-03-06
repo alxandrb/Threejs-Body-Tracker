@@ -1,0 +1,79 @@
+/* ─── Top header ─────────────────────────────────────────────────── */
+#top {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 16px 22px;
+  pointer-events: none;
+}
+
+#title {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  font-size: 20px;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  color: var(--cyan);
+  text-shadow: 0 0 16px var(--cyan);
+}
+
+#title .acc {
+  color: var(--magenta);
+  text-shadow: 0 0 16px var(--magenta);
+}
+
+/* ─── Status panel ───────────────────────────────────────────────── */
+#status-panel {
+  font-size: 10px;
+  line-height: 1.9;
+  color: var(--text-dim);
+  text-align: right;
+}
+
+#d-status { color: var(--cyan); }
+
+/* ─── FPS badge ──────────────────────────────────────────────────── */
+#fps {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  font-size: 13px;
+  letter-spacing: 2px;
+  pointer-events: none;
+  color: var(--text-mute);
+  transition: color 0.3s;
+}
+
+#fps.good { color: var(--green); }
+#fps.mid  { color: #ffcc00; }
+#fps.bad  { color: var(--red); }
+
+/* ─── Bottom bar ─────────────────────────────────────────────────── */
+#bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 10px 22px;
+  font-size: 9px;
+  color: var(--text-mute);
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  z-index: 10;
+  border-top: 1px solid rgba(0, 255, 231, 0.05);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+#bar .hint {
+  margin-left: auto;
+  color: rgba(0, 255, 231, 0.15);
+}

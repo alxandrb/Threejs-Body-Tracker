@@ -1,0 +1,12 @@
+{
+  "name": "hand-tracking-3d",
+  "version": "1.0.0",
+  "description": "Real-time 3D hand tracking with MediaPipe and Three.js",
+  "scripts": {
+    "dev":   "npx serve . --listen 3000 --no-clipboard",
+    "start": "npx serve . --listen 3000"
+  },
+  "keywords": ["mediapipe", "three.js", "hand-tracking", "blender"],
+  "license": "UNLICENSED",
+  "private": true
+}

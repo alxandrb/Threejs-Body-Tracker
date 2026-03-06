@@ -1,0 +1,211 @@
+/* ─── Settings toggle button ──────────────────────────────────────── */
+#sbtn {
+  position: fixed;
+  top: 44px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  background: rgba(5, 14, 20, 0.9);
+  border: 1px solid rgba(0, 255, 231, 0.2);
+  color: var(--text-dim);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 3px;
+  padding: 6px 18px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: border-color 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+
+#sbtn:hover { border-color: var(--cyan); color: var(--cyan); }
+#sbtn.open  { border-color: var(--magenta); color: var(--magenta); }
+
+/* ─── Settings panel ─────────────────────────────────────────────── */
+#spanel {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 19;
+  width: 320px;
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s;
+}
+
+#spanel.open {
+  max-height: 650px;
+  border-color: rgba(0, 255, 231, 0.22);
+}
+
+/* Panel inner padding */
+.pi { padding: 14px 20px 20px; }
+
+/* Panel section */
+.ps { margin-bottom: 18px; }
+.ps:last-child { margin-bottom: 0; }
+
+/* Section label */
+.sl {
+  font-size: 9px;
+  letter-spacing: 4px;
+  color: rgba(0, 255, 231, 0.28);
+  text-transform: uppercase;
+  margin-bottom: 9px;
+  border-bottom: 1px solid rgba(0, 255, 231, 0.06);
+  padding-bottom: 5px;
+}
+
+/* ─── Option rows (toggle) ────────────────────────────────────────── */
+.or {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+  cursor: pointer;
+}
+
+.or:hover .ol { color: rgba(0, 255, 231, 0.85); }
+
+.ol {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  user-select: none;
+  transition: color 0.12s;
+}
+
+/* ─── Toggle switch ───────────────────────────────────────────────── */
+.tog {
+  position: relative;
+  width: 36px;
+  height: 19px;
+  flex-shrink: 0;
+}
+
+.tog input { opacity: 0; width: 0; height: 0; }
+
+.tt {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 255, 231, 0.05);
+  border: 1px solid rgba(0, 255, 231, 0.16);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s;
+}
+
+.tt::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: rgba(0, 255, 231, 0.25);
+  transition: transform 0.2s ease, background 0.18s;
+}
+
+.tog input:checked + .tt {
+  background: rgba(0, 255, 231, 0.1);
+  border-color: var(--cyan);
+}
+
+.tog input:checked + .tt::after {
+  transform: translateX(17px);
+  background: var(--cyan);
+  box-shadow: 0 0 6px var(--cyan);
+}
+
+/* ─── Slider rows ─────────────────────────────────────────────────── */
+.sr { padding: 4px 0; }
+
+.sh {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 7px;
+}
+
+.sll {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.sv {
+  font-size: 10px;
+  color: var(--cyan);
+  min-width: 34px;
+  text-align: right;
+  font-weight: bold;
+}
+
+.sw {
+  position: relative;
+  height: 16px;
+  display: flex;
+  align-items: center;
+}
+
+/* Track background */
+.st {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(0, 255, 231, 0.07);
+  border-radius: 1px;
+}
+
+/* Track fill */
+.sf {
+  position: absolute;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--cyan), var(--magenta));
+  border-radius: 1px;
+  box-shadow: 0 0 5px rgba(0, 255, 231, 0.3);
+  pointer-events: none;
+}
+
+/* Range input */
+input[type="range"] {
+  -webkit-appearance: none;
+  position: relative;
+  width: 100%;
+  height: 16px;
+  background: transparent;
+  cursor: pointer;
+  margin: 0;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--dark);
+  border: 2px solid var(--cyan);
+  box-shadow: 0 0 7px var(--cyan);
+  transition: transform 0.12s;
+}
+
+input[type="range"]:hover::-webkit-slider-thumb {
+  transform: scale(1.2);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--dark);
+  border: 2px solid var(--cyan);
+  cursor: pointer;
+}
