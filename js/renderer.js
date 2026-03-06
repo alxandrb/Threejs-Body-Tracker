@@ -11,7 +11,7 @@
 import { opts } from './config.js';
 import { state } from './state.js';
 import { tickFPS, updateUI } from './ui.js';
-import { applySmoothing } from './smoothing.js';
+import { applySmoothing, smoothPos } from './smoothing.js';
 import {
   jointMesh, boneMesh, glowMesh,
   jointMat, boneMat,
@@ -19,6 +19,7 @@ import {
   updateBoneInstances
 } from './body.js';
 import { captureFrame } from './recording.js';
+import { applyAvatarPose, isAvatarVisible } from './avatar.js';
 
 // ─── Renderer ──────────────────────────────────────────────────────
 const canvas = document.getElementById('c');
@@ -42,7 +43,7 @@ export const camera = new THREE.PerspectiveCamera(
   0.01,
   100,
 );
-camera.position.set(0, 0, 1.4);
+camera.position.set(0, 1.2, 3.5);
 
 // ─── Lights ────────────────────────────────────────────────────────
 scene.add(new THREE.AmbientLight(0x112233, 1.0));
@@ -62,12 +63,17 @@ scene.add(fillLight);
 // ─── Add body meshes to scene ───────────────────────────────────────
 scene.add(jointMesh, boneMesh, glowMesh);
 
+// ─── Grid ──────────────────────────────────────────────────────────
+const gridHelper = new THREE.GridHelper(10, 20, 0x00ff41, 0x005511);
+gridHelper.position.set(0, 0, 0); // Center of the world
+scene.add(gridHelper);
+
 // ─── Idle camera drift (no body detected) ──────────────────────────
 let _t = 0;
 
 function driftCamera() {
   camera.position.x = Math.sin(_t * 0.3) * 0.05;
-  camera.position.y = Math.cos(_t * 0.2) * 0.03;
+  camera.position.y = 1.2 + Math.cos(_t * 0.2) * 0.03;
 }
 
 // ─── Pulse effect ───────────────────────────────────────────────────
@@ -98,9 +104,12 @@ function loop(now) {
     updateJointInstances();
     updateBoneInstances();
 
-    jointMesh.visible = opts.joints;
-    boneMesh.visible = opts.bones;
-    glowMesh.visible = opts.particles;
+    // The raw default glowing body
+    jointMesh.visible = opts.joints && !isAvatarVisible;
+    boneMesh.visible = opts.bones && !isAvatarVisible;
+    glowMesh.visible = opts.particles && !isAvatarVisible;
+
+    applyAvatarPose(smoothPos);
   } else {
     driftCamera();
     jointMesh.visible = false;

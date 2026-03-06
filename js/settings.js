@@ -10,6 +10,7 @@ import { opts } from './config.js';
 import { DOM } from './ui.js';
 import { boneMat } from './body.js';
 import { setMPRate } from './tracking.js';
+import { setAvatarVisibility } from './avatar.js';
 
 // ─── Panel open / close ──────────────────────────────────────────────
 function initPanel() {
@@ -113,6 +114,10 @@ function initToggles() {
   makeToggle('t-ti', 'tips');
   makeToggle('t-pa', 'particles');
   makeToggle('t-pu', 'pulse');
+
+  makeToggle('t-av', 'avatar', checked => {
+    setAvatarVisibility(checked);
+  });
 
   makeToggle('t-ca', 'cam', checked => {
     DOM.video.classList.toggle('hidden', !checked);

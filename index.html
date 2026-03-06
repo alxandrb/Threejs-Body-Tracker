@@ -14,6 +14,27 @@
   <link rel="stylesheet" href="css/settings.css">
   <link rel="stylesheet" href="css/record.css">
   <link rel="stylesheet" href="css/modal.css">
+  <link rel="stylesheet" href="css/dragdrop.css">
+  <script>
+    window.addEventListener('error', function (e) {
+      if (!document.getElementById('debug-box')) {
+        const d = document.createElement('div');
+        d.id = 'debug-box';
+        d.style.cssText = 'position:fixed;top:0;left:0;z-index:9999;background:red;color:white;font-size:20px;padding:20px;width:100vw;word-wrap:break-word;';
+        document.body.appendChild(d);
+      }
+      document.getElementById('debug-box').innerText += '\nERROR: ' + e.message + ' at ' + e.filename + ':' + e.lineno;
+    });
+    window.addEventListener('unhandledrejection', function (e) {
+      if (!document.getElementById('debug-box')) {
+        const d = document.createElement('div');
+        d.id = 'debug-box';
+        d.style.cssText = 'position:fixed;top:0;left:0;z-index:9999;background:red;color:white;font-size:20px;padding:20px;width:100vw;word-wrap:break-word;';
+        document.body.appendChild(d);
+      }
+      document.getElementById('debug-box').innerText += '\nPROMISE ERROR: ' + (e.reason && e.reason.message ? e.reason.message : e.reason);
+    });
+  </script>
 </head>
 
 <body>
@@ -25,6 +46,14 @@
       <div class="lb" id="lb"></div>
     </div>
     <div class="lm" id="lm">INITIALIZING...</div>
+  </div>
+
+  <!-- ─── Drag & Drop Overlay ──────────────────────────────────────── -->
+  <div id="dd-overlay" class="hidden">
+    <div class="dd-box">
+      <div class="dd-icon">⬇</div>
+      <div class="dd-text">DROP AVATAR HEREMust be a rigged .glb or .gltf</div>
+    </div>
   </div>
 
   <!-- ─── Canvas + video feed ────────────────────────────────────── -->
@@ -77,7 +106,21 @@
       </section>
 
       <section class="ps">
-        <h3 class="sl">Visibility</h3>
+        <h3 class="sl">Avatar</h3>
+        <label class="or"><span class="ol">Visibility</span>
+          <span class="tog"><input type="checkbox" id="t-av" checked><span class="tt"></span></span>
+        </label>
+        <div class="sr" style="margin-top:9px">
+          <input type="file" id="av-upload" accept=".glb,.gltf" style="display:none">
+          <button id="av-btn"
+            style="width:100%; padding:8px; background:rgba(0, 255, 65, 0.1); border:1px solid var(--cyan); color:var(--cyan); font-family:inherit; cursor:pointer; font-size:10px;">
+            ⬆ UPLOAD .GLB MODEL
+          </button>
+        </div>
+      </section>
+
+      <section class="ps">
+        <h3 class="sl">Skeleton Visibility</h3>
         <label class="or"><span class="ol">Joints</span>
           <span class="tog"><input type="checkbox" id="t-jo" checked><span class="tt"></span></span>
         </label>
@@ -210,6 +253,7 @@
 
   <!-- ─── External libs (globals: THREE, JSZip, Hands) ───────────── -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5.1675469404/pose.js" crossorigin="anonymous"></script>
 

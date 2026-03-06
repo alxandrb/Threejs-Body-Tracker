@@ -11,12 +11,13 @@
  * only orchestration of the other modules.
  */
 
-import { DOM, setProgress }          from './ui.js';
-import { startRenderLoop }           from './renderer.js';
+import { DOM, setProgress } from './ui.js';
+import { startRenderLoop } from './renderer.js';
 import { initTracking, startMPLoop } from './tracking.js';
-import { initRecording }             from './recording.js';
-import { initExport }                from './export.js';
-import { initSettings }              from './settings.js';
+import { initRecording } from './recording.js';
+import { initExport } from './export.js';
+import { initSettings } from './settings.js';
+import { initAvatarLoader } from './avatar.js';
 
 // ─── Helpers ─────────────────────────────────────────────────────────
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -28,10 +29,10 @@ async function initCamera() {
   // at full resolution — so quality doesn't matter here.
   DOM.video.srcObject = await navigator.mediaDevices.getUserMedia({
     video: {
-      width:     320,
-      height:    240,
+      width: 320,
+      height: 240,
       facingMode: 'user',
-      frameRate:  { ideal: 30 },
+      frameRate: { ideal: 30 },
     },
   });
 
@@ -64,6 +65,7 @@ async function init() {
   initRecording();
   initExport();
   initSettings();
+  initAvatarLoader();
 
   // Step 4 — Start loops
   setProgress(95, 'STARTING LOOPS...');

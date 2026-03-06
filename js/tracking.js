@@ -43,7 +43,7 @@ function onResults(results) {
     for (let i = 0; i < NJ; i++) {
       const b = i * 3;
       rawBuf[b] = -(lms[i].x - 0.5) * scale;
-      rawBuf[b + 1] = -(lms[i].y - 0.5) * scale;
+      rawBuf[b + 1] = -(lms[i].y - 0.5) * scale + 1.0; // Offset +1.0 so feet are at Y=0
       rawBuf[b + 2] = -lms[i].z * 1.2;
     }
 
