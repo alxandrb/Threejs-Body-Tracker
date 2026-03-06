@@ -15,11 +15,11 @@
   align-items: center;
   justify-content: space-between;
   padding: 9px 13px;
-  border-bottom: 1px solid rgba(255, 0, 24, 0.07);
+  border-bottom: 1px solid rgba(0, 255, 65, 0.07);
 }
 
 #rt {
-  font-size: 20px;
+  font-size: 15px;
   letter-spacing: 4px;
   color: var(--text-dim);
   text-transform: uppercase;
@@ -29,7 +29,7 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 20px;
+  font-size: 15px;
   letter-spacing: 2px;
   color: var(--text-mute);
 }
@@ -68,23 +68,23 @@
   flex: 1;
   padding: 4px 0;
   text-align: center;
-  border: 1px solid rgba(255, 0, 24, 0.13);
+  border: 1px solid rgba(0, 255, 65, 0.13);
   background: transparent;
-  color: rgba(255, 0, 24, 0.38);
+  color: rgba(0, 255, 65, 0.38);
   font-family: 'Share Tech Mono', monospace;
-  font-size: 20px;
+  font-size: 15px;
   cursor: pointer;
   transition: border-color 0.12s, color 0.12s;
 }
 
-.db:hover:not(:disabled)  { border-color: rgba(255, 0, 24, 0.4); color: rgba(255, 0, 24, 0.75); }
-.db.active  { border-color: var(--cyan); color: var(--cyan); background: rgba(255, 0, 24, 0.05); }
+.db:hover:not(:disabled)  { border-color: rgba(0, 255, 65, 0.4); color: rgba(0, 255, 65, 0.75); }
+.db.active  { border-color: var(--cyan); color: var(--cyan); background: rgba(0, 255, 65, 0.05); }
 .db:disabled { opacity: 0.4; cursor: not-allowed; }
 
 /* ─── Progress bar ────────────────────────────────────────────────── */
 #rpw {
   height: 2px;
-  background: rgba(255, 0, 24, 0.07);
+  background: rgba(0, 255, 65, 0.07);
   margin-bottom: 9px;
   overflow: hidden;
 }
@@ -105,7 +105,7 @@
 }
 
 #rtimer {
-  font-size: 40px;
+  font-size: 30px;
   letter-spacing: 2px;
   color: var(--text-mute);
   transition: color 0.2s;
@@ -117,7 +117,7 @@
 }
 
 #rfi {
-  font-size: 18px;
+  font-size: 14px;
   color: var(--text-mute);
   letter-spacing: 2px;
   text-align: right;
@@ -129,7 +129,7 @@
   width: 100%;
   padding: 8px 0;
   font-family: 'Share Tech Mono', monospace;
-  font-size: 20px;
+  font-size: 15px;
   letter-spacing: 4px;
   cursor: pointer;
   text-transform: uppercase;
@@ -175,9 +175,9 @@
 /* Hint text */
 #rhint {
   margin-top: 6px;
-  font-size: 16px;
+  font-size: 12px;
   letter-spacing: 1px;
-  color: rgba(255, 0, 24, 0.18);
+  color: rgba(0, 255, 65, 0.18);
   text-align: center;
   line-height: 1.7;
 }

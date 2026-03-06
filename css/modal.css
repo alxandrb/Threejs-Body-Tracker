@@ -28,7 +28,7 @@
 
 #ebox h2 {
   font-family: 'Rajdhani', sans-serif;
-  font-size: 34px;
+  font-size: 26px;
   letter-spacing: 6px;
   color: var(--green);
   text-shadow: 0 0 18px var(--green);
@@ -37,32 +37,32 @@
 }
 
 #ebox > p {
-  font-size: 18px;
+  font-size: 14px;
   letter-spacing: 2px;
-  color: rgba(255, 0, 24, 0.35);
+  color: rgba(0, 255, 65, 0.35);
   margin-bottom: 18px;
   line-height: 1.8;
 }
 
 /* ─── Stats list ──────────────────────────────────────────────────── */
-#ebox dl { border-top: 1px solid rgba(255, 0, 24, 0.05); }
+#ebox dl { border-top: 1px solid rgba(0, 255, 65, 0.05); }
 
 .es {
   display: flex;
   justify-content: space-between;
   padding: 5px 0;
-  border-bottom: 1px solid rgba(255, 0, 24, 0.05);
+  border-bottom: 1px solid rgba(0, 255, 65, 0.05);
 }
 
 .es dt {
-  font-size: 20px;
+  font-size: 15px;
   letter-spacing: 2px;
-  color: rgba(255, 0, 24, 0.38);
+  color: rgba(0, 255, 65, 0.38);
   text-transform: uppercase;
 }
 
 .es dd {
-  font-size: 20px;
+  font-size: 15px;
   color: var(--cyan);
 }
 
@@ -74,20 +74,20 @@
   align-items: center;
   gap: 9px;
   padding: 6px 9px;
-  background: rgba(255, 0, 24, 0.02);
-  border: 1px solid rgba(255, 0, 24, 0.06);
+  background: rgba(0, 255, 65, 0.02);
+  border: 1px solid rgba(0, 255, 65, 0.06);
   margin-bottom: 4px;
 }
 
 .fn {
-  font-size: 20px;
-  color: rgba(255, 0, 24, 0.65);
+  font-size: 15px;
+  color: rgba(0, 255, 65, 0.65);
   letter-spacing: 1px;
 }
 
 .fd {
-  font-size: 16px;
-  color: rgba(255, 0, 24, 0.28);
+  font-size: 12px;
+  color: rgba(0, 255, 65, 0.28);
   letter-spacing: 1px;
   margin-top: 1px;
 }
@@ -104,7 +104,7 @@
   padding: 9px 0;
   text-align: center;
   font-family: 'Share Tech Mono', monospace;
-  font-size: 20px;
+  font-size: 15px;
   letter-spacing: 3px;
   cursor: pointer;
   text-transform: uppercase;
@@ -123,11 +123,11 @@
 }
 
 .mb.s {
-  border: 1px solid rgba(255, 0, 24, 0.18);
-  color: rgba(255, 0, 24, 0.38);
+  border: 1px solid rgba(0, 255, 65, 0.18);
+  color: rgba(0, 255, 65, 0.38);
 }
 
 .mb.s:hover {
-  border-color: rgba(255, 0, 24, 0.5);
+  border-color: rgba(0, 255, 65, 0.5);
   color: var(--cyan);
 }

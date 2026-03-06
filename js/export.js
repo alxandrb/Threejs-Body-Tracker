@@ -277,7 +277,7 @@ async function downloadZip() {
 
   const el = recFrames[recFrames.length - 1].t;
   const fps = Math.round(recFrames.length / Math.max(el, 0.001)) || 30;
-  const filename = 'hand_animation.json';
+  const filename = 'body_animation.json';
 
   const jsonPayload = {
     version: '2.0',

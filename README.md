@@ -11,7 +11,7 @@
 
 ### Real-time 3D full body tracking · MediaPipe × Three.js · Blender export
 
-[![Live Demo](https://img.shields.io/badge/LIVE_DEMO-ff0018?style=for-the-badge&logoColor=black)](https://YOUR-USERNAME.github.io/body-tracking/)
+[![Live Demo](https://img.shields.io/badge/LIVE_DEMO-00ff41?style=for-the-badge&logoColor=black)](https://YOUR-USERNAME.github.io/body-tracking/)
 [![GitHub Pages](https://img.shields.io/badge/GitHub_Pages-181717?style=for-the-badge&logo=github&logoColor=white)](https://pages.github.com/)
 [![Three.js](https://img.shields.io/badge/Three.js-r128-000000?style=for-the-badge&logo=three.js&logoColor=white)](https://threejs.org/)
 [![MediaPipe](https://img.shields.io/badge/MediaPipe-Pose-0097A7?style=for-the-badge&logo=google&logoColor=white)](https://mediapipe.dev/)
