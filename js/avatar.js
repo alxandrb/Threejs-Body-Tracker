@@ -73,6 +73,7 @@ function mapBones(gltfScene) {
                         lbl.style.position = 'absolute';
                         lbl.style.color = '#ff0000';
                         lbl.style.fontFamily = 'monospace';
+                        lbl.style.fontSize = '17.5px';
                         lbl.style.fontWeight = 'bold';
                         lbl.style.textShadow = '1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000';
                         lbl.style.pointerEvents = 'none';
