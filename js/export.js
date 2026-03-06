@@ -6,6 +6,7 @@
 
 import { LANDMARK_NAMES, TIPS } from './config.js';
 import { recFrames } from './recording.js';
+import { METARIG_MAPPING } from './avatar.js';
 
 const $ = id => document.getElementById(id);
 
@@ -22,7 +23,11 @@ const $ = id => document.getElementById(id);
  * @returns {string} Python source
  */
 function buildBlenderScript(jsonFilename) {
-  const namesLiteral = JSON.stringify(LANDMARK_NAMES);
+  // Map standard MediaPipe names to the exact Blender Metarig names where defined
+  const mappedNames = LANDMARK_NAMES.map((name, i) => {
+    return METARIG_MAPPING[i.toString()] || (`MP_${name}`);
+  });
+  const namesLiteral = JSON.stringify(mappedNames);
   const tipsLiteral = [...TIPS].join(', ');
 
   const lines = [
@@ -199,13 +204,10 @@ function buildBlenderScript(jsonFilename) {
     '# ── Create one Empty per landmark ────────────────────────────────',
     'empties = []',
     'for i, name in enumerate(NAMES):',
-    '    bpy.ops.object.empty_add(type="SPHERE", location=(0, 0, 0))',
-    '    obj                    = bpy.context.active_object',
-    '    obj.name               = f"Body_{name}"',
+    '    obj = bpy.data.objects.new(name, None)',
+    '    obj.empty_display_type = "SPHERE"',
     '    obj.empty_display_size = 0.014 if i in TIPS else 0.009',
-    '    obj.color              = (1, 0, 0.67, 1) if i in TIPS else (0, 1, 0.91, 1)',
-    '    for c in list(obj.users_collection):',
-    '        c.objects.unlink(obj)',
+    '    obj.color = (1, 0, 0.67, 1) if i in TIPS else (0, 1, 0.91, 1)',
     '    col.objects.link(obj)',
     '    empties.append(obj)',
     '',

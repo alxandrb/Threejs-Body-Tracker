@@ -32,8 +32,7 @@ export const renderer = new THREE.WebGLRenderer({
   powerPreference: 'high-performance',
   premultipliedAlpha: false,
 });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(1); // Force 1x pixel ratio for performance on 4k displays
 renderer.toneMapping = THREE.NoToneMapping;
 
 // ─── Scene ─────────────────────────────────────────────────────────
@@ -193,8 +192,32 @@ export function startRenderLoop() {
 }
 
 // ─── Resize handler ─────────────────────────────────────────────────
-window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
+function handleResize() {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+
+  camera.aspect = w / h;
   camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
+
+  // Cap internal rendering resolution to 1080p (max 1920px width)
+  // Stops the GPU from having to calculate PBR for 8 million pixels on 4K displays
+  const maxW = 1920;
+  let renderW = w;
+  let renderH = h;
+
+  if (w > maxW) {
+    const scale = maxW / w;
+    renderW = Math.round(w * scale);
+    renderH = Math.round(h * scale);
+  }
+
+  // Use false to prevent Three.js from setting inline width/height to internal resolution
+  renderer.setSize(renderW, renderH, false);
+
+  // Explicitly set the CSS canvas to fill the native screen size
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+}
+
+window.addEventListener('resize', handleResize);
+handleResize(); // Call once on init

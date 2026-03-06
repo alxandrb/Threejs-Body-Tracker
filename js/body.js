@@ -157,13 +157,17 @@ for (let i = 0; i < NJ; i++) {
   lbl.style.pointerEvents = 'none';
   lbl.style.display = 'none';
   lbl.style.textShadow = '1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000';
-  lbl.style.transform = 'translate(-50%, -50%)'; // center exactly on joint
+  lbl.style.left = '0'; // Use translate3d instead of top/left for performance
+  lbl.style.top = '0';
+  lbl.style.transform = 'translate(-50%, -50%)';
 
   document.body.appendChild(lbl);
   jointLabels.push(lbl);
 }
 
 const _lblPos = new THREE.Vector3();
+
+let _labelTick = 0;
 
 export function updateJointLabels(camera, isVisible) {
   if (!isVisible) {
@@ -174,6 +178,10 @@ export function updateJointLabels(camera, isVisible) {
     }
     return;
   }
+
+  // Throttle DOM updates: ~60fps render loop / 3 = ~20fps updates (matches MediaPipe target)
+  if (++_labelTick < 3) return;
+  _labelTick = 0;
 
   for (let i = 0; i < NJ; i++) {
     const p = smoothPos[i];
@@ -188,7 +196,9 @@ export function updateJointLabels(camera, isVisible) {
 
     // If z > 1, the point is behind the camera
     if (_lblPos.z > 1) {
-      jointLabels[i].style.display = 'none';
+      if (jointLabels[i].style.display !== 'none') {
+        jointLabels[i].style.display = 'none';
+      }
       continue;
     }
 
@@ -196,8 +206,9 @@ export function updateJointLabels(camera, isVisible) {
     const x = (_lblPos.x + 1) / 2 * window.innerWidth;
     const y = -(_lblPos.y - 1) / 2 * window.innerHeight;
 
-    jointLabels[i].style.display = 'block';
-    jointLabels[i].style.left = `${x}px`;
-    jointLabels[i].style.top = `${y}px`;
+    if (jointLabels[i].style.display !== 'block') {
+      jointLabels[i].style.display = 'block';
+    }
+    jointLabels[i].style.transform = `translate(-50%, -50%) translate3d(${x}px, ${y}px, 0)`;
   }
 }

@@ -14,7 +14,7 @@ const debugSpheres = {}; // Visual debugging spheres for each mapped bone
 const debugLabels = {};  // HTML div labels for each mapped bone
 
 // Exact mapping provided by the user (Blender Metarig -> MediaPipe Index)
-const METARIG_MAPPING = {
+export const METARIG_MAPPING = {
     "0": "spine.006",
     "7": "ear.L",
     "8": "ear.R",
@@ -78,6 +78,10 @@ function mapBones(gltfScene) {
                         lbl.style.textShadow = '1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000';
                         lbl.style.pointerEvents = 'none';
                         lbl.style.zIndex = '9999';
+                        lbl.style.display = 'none';
+                        lbl.style.left = '0';
+                        lbl.style.top = '0';
+
                         document.body.appendChild(lbl);
                         debugLabels[mpIndex] = lbl;
 
@@ -241,21 +245,45 @@ function applyBoneRotation(boneIndex, p1Idx, p2Idx, buf) {
     v1.normalize();
 
     // Reference vector (assuming bones grow along Y in local space)
-    const up = new THREE.Vector3(0, -1, 0); // Assuming MediaPipe Y is down
+    const isLeg = ['25', '26', '27', '28'].includes(boneIndex);
+    const isArm = ['13', '14', '15', '16'].includes(boneIndex);
+
+    // Some Blender exports have opposite Up vectors for legs vs upper body
+    const up = isLeg ? new THREE.Vector3(0, 1, 0) : new THREE.Vector3(0, -1, 0);
 
     q0.setFromUnitVectors(up, v1);
+
+    if (isLeg) {
+        // Legs point down correctly now, but knees hinge backwards. Rotate 180 deg around local Y (Roll)
+        const qRoll = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI);
+        q0.multiply(qRoll);
+    } else if (isArm) {
+        // Arms roll incorrectly by 90 degrees out of the box. Correcting with an inverted 90 deg roll.
+        const qRoll = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), -Math.PI / 2);
+        q0.multiply(qRoll);
+    }
+
     bone.quaternion.slerp(q0, 0.5); // Smooth apply
 }
 
 import { camera } from './renderer.js';
 const _worldPos = new THREE.Vector3();
 
+let _avatarDebugTick = 0;
+
 // Updates 2D HTML labels to stick to the 3D bones
 function updateDebugVisuals() {
+    // Throttle label updates to ~20FPS instead of 60FPS to avoid Layout Thrashing
+    // But always run immediately if we need to hide the avatar
+    if (isAvatarVisible && ++_avatarDebugTick < 3) return;
+    _avatarDebugTick = 0;
+
     for (const [mpIndex, bone] of Object.entries(boneMap)) {
         if (!isAvatarVisible) {
             if (debugSpheres[mpIndex]) debugSpheres[mpIndex].visible = false;
-            if (debugLabels[mpIndex]) debugLabels[mpIndex].style.display = 'none';
+            if (debugLabels[mpIndex] && debugLabels[mpIndex].style.display !== 'none') {
+                debugLabels[mpIndex].style.display = 'none';
+            }
             continue;
         }
 
@@ -276,11 +304,14 @@ function updateDebugVisuals() {
         if (debugLabels[mpIndex]) {
             // Hide if behind camera
             if (_worldPos.z > 1) {
-                debugLabels[mpIndex].style.display = 'none';
+                if (debugLabels[mpIndex].style.display !== 'none') {
+                    debugLabels[mpIndex].style.display = 'none';
+                }
             } else {
-                debugLabels[mpIndex].style.display = 'block';
-                debugLabels[mpIndex].style.left = `${x}px`;
-                debugLabels[mpIndex].style.top = `${y}px`;
+                if (debugLabels[mpIndex].style.display !== 'block') {
+                    debugLabels[mpIndex].style.display = 'block';
+                }
+                debugLabels[mpIndex].style.transform = `translate3d(${x}px, ${y}px, 0)`;
             }
         }
     }
