@@ -6,10 +6,10 @@
   transform: translateX(-50%);
   z-index: 20;
   background: rgba(5, 14, 20, 0.9);
-  border: 1px solid rgba(0, 255, 231, 0.2);
+  border: 1px solid rgba(255, 0, 24, 0.2);
   color: var(--text-dim);
   font-family: 'Share Tech Mono', monospace;
-  font-size: 10px;
+  font-size: 20px;
   letter-spacing: 3px;
   padding: 6px 18px;
   cursor: pointer;
@@ -38,7 +38,7 @@
 
 #spanel.open {
   max-height: 650px;
-  border-color: rgba(0, 255, 231, 0.22);
+  border-color: rgba(255, 0, 24, 0.22);
 }
 
 /* Panel inner padding */
@@ -50,12 +50,12 @@
 
 /* Section label */
 .sl {
-  font-size: 9px;
+  font-size: 18px;
   letter-spacing: 4px;
-  color: rgba(0, 255, 231, 0.28);
+  color: rgba(255, 0, 24, 0.28);
   text-transform: uppercase;
   margin-bottom: 9px;
-  border-bottom: 1px solid rgba(0, 255, 231, 0.06);
+  border-bottom: 1px solid rgba(255, 0, 24, 0.06);
   padding-bottom: 5px;
 }
 
@@ -68,10 +68,10 @@
   cursor: pointer;
 }
 
-.or:hover .ol { color: rgba(0, 255, 231, 0.85); }
+.or:hover .ol { color: rgba(255, 0, 24, 0.85); }
 
 .ol {
-  font-size: 10px;
+  font-size: 20px;
   letter-spacing: 2px;
   color: var(--text-dim);
   text-transform: uppercase;
@@ -92,8 +92,8 @@
 .tt {
   position: absolute;
   inset: 0;
-  background: rgba(0, 255, 231, 0.05);
-  border: 1px solid rgba(0, 255, 231, 0.16);
+  background: rgba(255, 0, 24, 0.05);
+  border: 1px solid rgba(255, 0, 24, 0.16);
   border-radius: 10px;
   cursor: pointer;
   transition: background 0.18s, border-color 0.18s;
@@ -107,12 +107,12 @@
   width: 11px;
   height: 11px;
   border-radius: 50%;
-  background: rgba(0, 255, 231, 0.25);
+  background: rgba(255, 0, 24, 0.25);
   transition: transform 0.2s ease, background 0.18s;
 }
 
 .tog input:checked + .tt {
-  background: rgba(0, 255, 231, 0.1);
+  background: rgba(255, 0, 24, 0.1);
   border-color: var(--cyan);
 }
 
@@ -133,14 +133,14 @@
 }
 
 .sll {
-  font-size: 10px;
+  font-size: 20px;
   letter-spacing: 2px;
   color: var(--text-dim);
   text-transform: uppercase;
 }
 
 .sv {
-  font-size: 10px;
+  font-size: 20px;
   color: var(--cyan);
   min-width: 34px;
   text-align: right;
@@ -160,7 +160,7 @@
   left: 0;
   right: 0;
   height: 2px;
-  background: rgba(0, 255, 231, 0.07);
+  background: rgba(255, 0, 24, 0.07);
   border-radius: 1px;
 }
 
@@ -171,7 +171,7 @@
   height: 2px;
   background: linear-gradient(90deg, var(--cyan), var(--magenta));
   border-radius: 1px;
-  box-shadow: 0 0 5px rgba(0, 255, 231, 0.3);
+  box-shadow: 0 0 5px rgba(255, 0, 24, 0.3);
   pointer-events: none;
 }
 

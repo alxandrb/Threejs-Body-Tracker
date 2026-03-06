@@ -15,8 +15,8 @@ import { NJ, NC, CONNECTIONS, TIPS } from './config.js';
 import { smoothPos } from './smoothing.js';
 
 // ─── Colours ───────────────────────────────────────────────────────
-const CYAN = new THREE.Color(0x00ffe7);
-const MAGENTA = new THREE.Color(0xff00aa);
+const CYAN = new THREE.Color(0xff0018);
+const MAGENTA = new THREE.Color(0x00ff55);
 
 // ─── Materials (exported so settings.js can mutate them) ───────────
 export const jointMat = new THREE.MeshStandardMaterial({
@@ -27,8 +27,8 @@ export const jointMat = new THREE.MeshStandardMaterial({
 });
 
 export const boneMat = new THREE.MeshStandardMaterial({
-  color: new THREE.Color(0x00c8b8),
-  emissive: new THREE.Color(0x00ffe7),
+  color: new THREE.Color(0xff3747),
+  emissive: new THREE.Color(0xff0018),
   emissiveIntensity: 0.12,
   metalness: 0.8,
   roughness: 0.3,
@@ -68,7 +68,7 @@ _glowGeo.setAttribute('position', new THREE.BufferAttribute(glowBuf, 3));
 export const glowMesh = new THREE.Points(
   _glowGeo,
   new THREE.PointsMaterial({
-    color: 0x00ffe7,
+    color: 0xff0018,
     size: 0.022,
     transparent: true,
     opacity: 0.22,

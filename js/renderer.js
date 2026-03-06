@@ -47,15 +47,15 @@ camera.position.set(0, 0, 1.4);
 // ─── Lights ────────────────────────────────────────────────────────
 scene.add(new THREE.AmbientLight(0x112233, 1.0));
 
-const rimLight = new THREE.DirectionalLight(0x00ffe7, 0.9);
+const rimLight = new THREE.DirectionalLight(0xff0018, 0.9);
 rimLight.position.set(-2, 2, 1);
 scene.add(rimLight);
 
-export const pinkLight = new THREE.PointLight(0xff00aa, 1.0, 3);
+export const pinkLight = new THREE.PointLight(0x00ff55, 1.0, 3);
 pinkLight.position.set(1, -1, 0.5);
 scene.add(pinkLight);
 
-export const fillLight = new THREE.PointLight(0x00ffe7, 0.5, 3);
+export const fillLight = new THREE.PointLight(0xff0018, 0.5, 3);
 fillLight.position.set(-0.5, 0.5, 1);
 scene.add(fillLight);
 

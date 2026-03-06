@@ -1,16 +1,16 @@
 /* ─── Design tokens ──────────────────────────────────────────────── */
 :root {
-  --cyan:    #00ffe7;
-  --magenta: #ff00aa;
-  --red:     #ff3355;
-  --green:   #00ff88;
+  --cyan:    #ff0018;
+  --magenta: #00ff55;
+  --red:     #00ccaa;
+  --green:   #ff0077;
   --dark:    #050a0f;
 
-  --grid-line: rgba(0, 255, 231, 0.04);
-  --border:    rgba(0, 255, 231, 0.14);
+  --grid-line: rgba(255, 0, 24, 0.04);
+  --border:    rgba(255, 0, 24, 0.14);
   --panel-bg:  rgba(4, 11, 16, 0.97);
-  --text-dim:  rgba(0, 255, 231, 0.45);
-  --text-mute: rgba(0, 255, 231, 0.28);
+  --text-dim:  rgba(255, 0, 24, 0.45);
+  --text-mute: rgba(255, 0, 24, 0.28);
 }
 
 /* ─── Reset ──────────────────────────────────────────────────────── */
@@ -62,7 +62,7 @@ body::before {
   right: 16px;
   width: 180px;
   height: 135px;
-  border: 1px solid rgba(0, 255, 231, 0.25);
+  border: 1px solid rgba(255, 0, 24, 0.25);
   border-radius: 3px;
   z-index: 10;
   object-fit: cover;
@@ -111,7 +111,7 @@ body::before {
 
 .lt {
   font-family: 'Rajdhani', sans-serif;
-  font-size: 26px;
+  font-size: 52px;
   font-weight: 600;
   letter-spacing: 10px;
   color: var(--cyan);
@@ -121,7 +121,7 @@ body::before {
 .lbw {
   width: 260px;
   height: 2px;
-  background: rgba(0, 255, 231, 0.09);
+  background: rgba(255, 0, 24, 0.09);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -135,8 +135,8 @@ body::before {
 }
 
 .lm {
-  font-size: 10px;
-  color: rgba(0, 255, 231, 0.45);
+  font-size: 20px;
+  color: rgba(255, 0, 24, 0.45);
   letter-spacing: 3px;
   text-transform: uppercase;
 }
