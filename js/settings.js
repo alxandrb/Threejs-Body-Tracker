@@ -6,18 +6,18 @@
  * through callbacks or direct material/DOM mutations.
  */
 
-import { opts }       from './config.js';
-import { DOM }        from './ui.js';
-import { boneMat }    from './hand.js';
-import { setMPRate }  from './tracking.js';
+import { opts } from './config.js';
+import { DOM } from './ui.js';
+import { boneMat } from './body.js';
+import { setMPRate } from './tracking.js';
 
 // ─── Panel open / close ──────────────────────────────────────────────
 function initPanel() {
-  const btn   = document.getElementById('sbtn');
+  const btn = document.getElementById('sbtn');
   const panel = document.getElementById('spanel');
-  let isOpen  = false;
+  let isOpen = false;
 
-  const open  = () => {
+  const open = () => {
     isOpen = true;
     panel.classList.add('open');
     btn.classList.add('open');
@@ -56,14 +56,14 @@ function initPanel() {
  */
 function makeSlider(slId, optsKey, min, max, fmt, onInput) {
   const slider = document.getElementById('sl-' + slId);
-  const fill   = document.getElementById('sf-' + slId);
-  const label  = document.getElementById('sv-' + slId);
+  const fill = document.getElementById('sf-' + slId);
+  const label = document.getElementById('sv-' + slId);
 
   const update = () => {
     const v = parseFloat(slider.value);
-    opts[optsKey]     = v;
+    opts[optsKey] = v;
     label.textContent = fmt(v);
-    fill.style.width  = ((v - min) / (max - min) * 100) + '%';
+    fill.style.width = ((v - min) / (max - min) * 100) + '%';
     if (onInput) onInput(v);
   };
 
