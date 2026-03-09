@@ -10,6 +10,7 @@ export let isAvatarVisible = false;
 export let avatarModel = null;
 const boneMap = {}; // Maps MediaPipe index (e.g., 13) to THREE.Bone instances
 const initialBinds = {}; // Stores initial quaternions to compute relative transforms
+const bindDirs = {};     // Stores rest direction of each bone in parent-local space
 const debugSpheres = {}; // Visual debugging spheres for each mapped bone
 const debugLabels = {};  // HTML div labels for each mapped bone
 
@@ -45,6 +46,7 @@ function mapBones(gltfScene) {
     // Clear previous allocations
     for (let key in boneMap) delete boneMap[key];
     for (let key in initialBinds) delete initialBinds[key];
+    for (let key in bindDirs) delete bindDirs[key];
 
     gltfScene.traverse((child) => {
         if (child.isBone) {
@@ -57,6 +59,10 @@ function mapBones(gltfScene) {
                     if (bname === targetName || strippedName === targetName.replace(/\./g, '')) {
                         boneMap[mpIndex] = child;
                         initialBinds[mpIndex] = child.quaternion.clone();
+                        // Compute this bone's rest direction in parent-local space
+                        // Bones grow along local Y axis in Blender; the bind quaternion
+                        // rotates that Y axis to match the A-pose orientation
+                        bindDirs[mpIndex] = new THREE.Vector3(0, 1, 0).applyQuaternion(child.quaternion);
                         console.log(`Mapped MP Index [${mpIndex}] -> ${child.name}`);
 
                         // Visual Debugger: Create a red sphere at the bone
@@ -160,7 +166,7 @@ export function loadAvatarUrl(url) {
         if (avatarModel) scene.remove(avatarModel);
         avatarModel = gltf.scene;
         avatarModel.rotation.y = Math.PI;
-        avatarModel.scale.setScalar(1.5);
+        avatarModel.scale.setScalar(1.0);
         avatarModel.position.set(0, 0, 0); // Center of the world
         scene.add(avatarModel);
         mapBones(avatarModel);
@@ -187,11 +193,10 @@ function loadAvatarFile(file) {
 
             avatarModel = gltf.scene;
 
-            // Face the camera (Three.js standard vs Mixamo standard)
             avatarModel.rotation.y = Math.PI;
 
-            // Default scale/position adjustments
-            avatarModel.scale.setScalar(1.5);
+            // Scale 1.0 = real-world meters (matches poseWorldLandmarks)
+            avatarModel.scale.setScalar(1.0);
             avatarModel.position.set(0, 0, 0); // Center of the world
 
             scene.add(avatarModel);
@@ -218,12 +223,12 @@ export function setAvatarVisibility(visible) {
 // Global math instances for performance
 const v0 = new THREE.Vector3();
 const v1 = new THREE.Vector3();
+const v2 = new THREE.Vector3();
 const q0 = new THREE.Quaternion();
+const q1 = new THREE.Quaternion();
+const _parentWorldQuat = new THREE.Quaternion();
+const _invParentWorldQuat = new THREE.Quaternion();
 
-/**
- * Apply MediaPipe smooth coordinates to the Bones
- * @param {Float32Array} smoothBuf - 33x3 xyz flat array
- */
 // Helper to extract a Vector3 from the object array
 function getVec3(out, buf, index) {
     if (!buf[index]) return out;
@@ -231,39 +236,45 @@ function getVec3(out, buf, index) {
     return out;
 }
 
-// Applies rotation from parent->child vector to target bone using strict indices
+/**
+ * Compute the direction from landmark p1Idx to p2Idx, then
+ * derive a rotation DELTA relative to the bone's A-pose rest direction.
+ * The final rotation = deltaRotation * bindQuaternion
+ * This ensures A-pose = no delta, movements are relative.
+ */
 function applyBoneRotation(boneIndex, p1Idx, p2Idx, buf) {
     const bone = boneMap[boneIndex];
     if (!bone) return;
 
-    getVec3(v0, buf, p1Idx); // Parent
-    getVec3(v1, buf, p2Idx); // Child
+    const bindQuat = initialBinds[boneIndex];
+    const bindDir = bindDirs[boneIndex];
+    if (!bindQuat || !bindDir) return;
 
-    // Vector pointing from Parent to Child
+    getVec3(v0, buf, p1Idx); // Parent landmark
+    getVec3(v1, buf, p2Idx); // Child landmark
+
+    // Direction from parent to child in world space
     v1.sub(v0);
-    if (v1.lengthSq() < 0.0001) return; // Guard against NaN
+    if (v1.lengthSq() < 0.0001) return;
     v1.normalize();
 
-    // Reference vector (assuming bones grow along Y in local space)
-    const isLeg = ['25', '26', '27', '28'].includes(boneIndex);
-    const isArm = ['13', '14', '15', '16'].includes(boneIndex);
-
-    // Some Blender exports have opposite Up vectors for legs vs upper body
-    const up = isLeg ? new THREE.Vector3(0, 1, 0) : new THREE.Vector3(0, -1, 0);
-
-    q0.setFromUnitVectors(up, v1);
-
-    if (isLeg) {
-        // Legs point down correctly now, but knees hinge backwards. Rotate 180 deg around local Y (Roll)
-        const qRoll = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI);
-        q0.multiply(qRoll);
-    } else if (isArm) {
-        // Arms roll incorrectly by 90 degrees out of the box. Correcting with an inverted 90 deg roll.
-        const qRoll = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), -Math.PI / 2);
-        q0.multiply(qRoll);
+    // Convert world-space direction to bone-parent-local space
+    if (bone.parent) {
+        bone.parent.getWorldQuaternion(_parentWorldQuat);
+        _invParentWorldQuat.copy(_parentWorldQuat).invert();
+        v1.applyQuaternion(_invParentWorldQuat);
     }
 
-    bone.quaternion.slerp(q0, 0.5); // Smooth apply
+    // Compute delta rotation: from bind direction to target direction
+    // bindDir is the direction the bone points in rest/A-pose (parent-local space)
+    q0.setFromUnitVectors(bindDir, v1);
+
+    // Final rotation = delta * bindQuat
+    // This applies the bind pose first, then the delta on top
+    q1.multiplyQuaternions(q0, bindQuat);
+
+    // Smooth blend toward the target
+    bone.quaternion.slerp(q1, 0.5);
 }
 
 import { camera } from './renderer.js';
@@ -320,48 +331,48 @@ function updateDebugVisuals() {
 export function applyAvatarPose(smoothBuf) {
     if (!avatarModel || !isAvatarVisible) return;
 
-    // Direct mapping to the exact keys requested:
-    // Left Arm (Shoulder -> Elbow) via upper_arm.L (13)
-    applyBoneRotation('13', 11, 13, smoothBuf);
-    // Left Forearm (Elbow -> Wrist) via forearm.L (15)
-    applyBoneRotation('15', 13, 15, smoothBuf);
+    // ── Arms ─────────────────────────────────────────────────────
+    applyBoneRotation('13', 11, 13, smoothBuf); // upper_arm.L
+    applyBoneRotation('15', 13, 15, smoothBuf); // forearm.L
+    applyBoneRotation('14', 12, 14, smoothBuf); // upper_arm.R
+    applyBoneRotation('16', 14, 16, smoothBuf); // forearm.R
 
-    // Right Arm (Shoulder -> Elbow) via upper_arm.R (14)
-    applyBoneRotation('14', 12, 14, smoothBuf);
-    // Right Forearm (Elbow -> Wrist) via forearm.R (16)
-    applyBoneRotation('16', 14, 16, smoothBuf);
+    // ── Legs ─────────────────────────────────────────────────────
+    applyBoneRotation('25', 23, 25, smoothBuf); // thigh.L
+    applyBoneRotation('27', 25, 27, smoothBuf); // shin.L
+    applyBoneRotation('29', 27, 31, smoothBuf); // foot.L: ankle(27) → foot_index(31) = forward
+    applyBoneRotation('26', 24, 26, smoothBuf); // thigh.R
+    applyBoneRotation('28', 26, 28, smoothBuf); // shin.R
+    applyBoneRotation('30', 28, 32, smoothBuf); // foot.R: ankle(28) → foot_index(32) = forward
 
-    // Left Leg (Hip -> Knee) via thigh.L (25)
-    applyBoneRotation('25', 23, 25, smoothBuf);
-    // Left Lower Leg (Knee -> Ankle) via shin.L (27)
-    applyBoneRotation('27', 25, 27, smoothBuf);
+    // ── Spine & Head ─────────────────────────────────────────────
+    // Torso rotation from hip-center to shoulder-center
+    const spine = boneMap['0'];
+    const spineBindQuat = initialBinds['0'];
+    const spineBindDir = bindDirs['0'];
+    if (spine && spineBindQuat && spineBindDir) {
+        getVec3(v0, smoothBuf, 11);
+        getVec3(v1, smoothBuf, 12);
+        v0.add(v1).multiplyScalar(0.5); // Mid-shoulder
 
-    // Right Leg (Hip -> Knee) via thigh.R (26)
-    applyBoneRotation('26', 24, 26, smoothBuf);
-    // Right Lower Leg (Knee -> Ankle) via shin.R (28)
-    applyBoneRotation('28', 26, 28, smoothBuf);
+        getVec3(v1, smoothBuf, 23);
+        getVec3(v2, smoothBuf, 24);
+        v1.add(v2).multiplyScalar(0.5); // Mid-hip
 
-    // Spine & Head 
-    // MediaPipe: 0 is Nose, 11/12 are shoulders
-    // Extremely simplified torso rotation:
-    getVec3(v0, smoothBuf, 11);
-    getVec3(v1, smoothBuf, 12);
-    v0.add(v1).multiplyScalar(0.5); // Mid-shoulder
-
-    getVec3(v1, smoothBuf, 23);
-    getVec3(q0, smoothBuf, 24); // repurpose q0 vector temporarily
-    v1.add(q0).multiplyScalar(0.5); // Mid-hip
-
-    const spine = boneMap['0']; // Head/Spine depending on exact mapping
-    if (spine) {
-        v0.sub(v1); // Hip to Shoulder
+        v0.sub(v1); // Hip to Shoulder direction
         if (v0.lengthSq() > 0.0001) {
             v0.normalize();
-            const up = new THREE.Vector3(0, 1, 0); // Spine usually grows up
-            q0.setFromUnitVectors(up, v0);
-            spine.quaternion.slerp(q0, 0.2);
+            if (spine.parent) {
+                spine.parent.getWorldQuaternion(_parentWorldQuat);
+                _invParentWorldQuat.copy(_parentWorldQuat).invert();
+                v0.applyQuaternion(_invParentWorldQuat);
+            }
+            q0.setFromUnitVectors(spineBindDir, v0);
+            q1.multiplyQuaternions(q0, spineBindQuat);
+            spine.quaternion.slerp(q1, 0.3);
         }
     }
 
     updateDebugVisuals();
 }
+
