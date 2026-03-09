@@ -5,7 +5,7 @@
  */
 
 import { LANDMARK_NAMES, TIPS } from './config.js';
-import { recFrames } from './recording.js';
+import { recFrames, recMode } from './recording.js';
 import { METARIG_MAPPING } from './avatar.js';
 
 const $ = id => document.getElementById(id);
@@ -255,6 +255,110 @@ function buildBlenderScript(jsonFilename) {
   return lines.join('\n');
 }
 
+function buildAvatarBlenderScript(jsonFilename) {
+  const lines = [
+    '# =================================================================',
+    '# BODY.TRACK 3D — Blender Avatar Import Script',
+    '# Blender 3.0+  |  Scripting workspace → Open → Run Script ▶',
+    '# =================================================================',
+    'import bpy',
+    'import json',
+    'import os',
+    'from mathutils import Vector, Quaternion',
+    '',
+    'JSON_PATH = ""',
+    'if not JSON_PATH:',
+    '    _candidates = []',
+    '    try:',
+    '        _here = os.path.dirname(os.path.abspath(__file__))',
+    '        _candidates.append(os.path.join(_here, "' + jsonFilename + '"))',
+    '    except (NameError, ValueError):',
+    '        pass',
+    '    if bpy.data.filepath:',
+    '        _blend_dir = os.path.dirname(os.path.abspath(bpy.data.filepath))',
+    '        _candidates.append(os.path.join(_blend_dir, "' + jsonFilename + '"))',
+    '    _candidates.append(os.path.join(os.path.expanduser("~"), "Desktop", "' + jsonFilename + '"))',
+    '    _candidates.append(os.path.join(os.path.expanduser("~"), "Downloads", "' + jsonFilename + '"))',
+    '    for _c in _candidates:',
+    '        if os.path.exists(_c):',
+    '            JSON_PATH = _c',
+    '            print(f"  Auto-detected JSON at: {_c}")',
+    '            break',
+    '',
+    'if not JSON_PATH or not os.path.exists(JSON_PATH):',
+    '    raise FileNotFoundError("Could not find: ' + jsonFilename + '. Please set JSON_PATH manually.")',
+    '',
+    'def to_blender_pos(x, y, z):',
+    '    return Vector((x, -z, y))',
+    '',
+    'def to_blender_quat(x, y, z, w):',
+    '    # ThreeJS Y-up to Blender Z-up quaternion',
+    '    return Quaternion((w, x, -z, y))',
+    '',
+    'with open(JSON_PATH, encoding="utf-8") as f:',
+    '    data = json.load(f)',
+    '',
+    'fps = data.get("fps", 30)',
+    'frames = data.get("frames", [])',
+    'if not frames:',
+    '    raise ValueError("No frames found in JSON")',
+    '',
+    'scene = bpy.context.scene',
+    'scene.render.fps = fps',
+    'scene.frame_start = 1',
+    'scene.frame_end = len(frames)',
+    '',
+    'print(f"▶ Importing {len(frames)} Avatar frames...")',
+    '',
+    'if "AvatarTracking" in bpy.data.collections:',
+    '    col = bpy.data.collections["AvatarTracking"]',
+    '    for obj in list(col.objects):',
+    '        bpy.data.objects.remove(obj, do_unlink=True)',
+    '    bpy.data.collections.remove(col)',
+    '',
+    'col = bpy.data.collections.new("AvatarTracking")',
+    'scene.collection.children.link(col)',
+    '',
+    '# Create empties based on first frame',
+    'empties = {}',
+    'if "bones" in frames[0]:',
+    '    for b in frames[0]["bones"]:',
+    '        name = "Tracker_" + b["n"]',
+    '        obj = bpy.data.objects.new(name, None)',
+    '        obj.empty_display_type = "ARROWS"',
+    '        obj.empty_display_size = 0.05',
+    '        # Ensure we can keyframe quaternions',
+    '        obj.rotation_mode = "QUATERNION"',
+    '        col.objects.link(obj)',
+    '        empties[b["n"]] = obj',
+    '',
+    'print("▶ Inserting keyframes...")',
+    'for fi, f in enumerate(frames):',
+    '    for b in f.get("bones", []):',
+    '        obj = empties.get(b["n"])',
+    '        if not obj: continue',
+    '        obj.location = to_blender_pos(*b["p"])',
+    '        obj.rotation_quaternion = to_blender_quat(*b["q"])',
+    '        obj.keyframe_insert(data_path="location", frame=fi + 1)',
+    '        obj.keyframe_insert(data_path="rotation_quaternion", frame=fi + 1)',
+    '',
+    'def set_linear(action):',
+    '    try:',
+    '        for fc in action.fcurves:',
+    '            for kp in fc.keyframe_points:',
+    '                kp.interpolation = "LINEAR"',
+    '    except AttributeError:',
+    '        pass',
+    '',
+    'for obj in empties.values():',
+    '    if obj.animation_data and obj.animation_data.action:',
+    '        set_linear(obj.animation_data.action)',
+    '',
+    'print("✓ Import complete!")',
+  ];
+  return lines.join('\n');
+}
+
 // ─── Modal helpers ───────────────────────────────────────────────────
 function openModal() {
   if (!recFrames.length) return;
@@ -287,8 +391,8 @@ async function downloadZip() {
     fps,
     frameCount: recFrames.length,
     duration: +el.toFixed(3),
-    landmarks: 33,
-    format: 'lm: flat array [x0,y0,z0,...] Three.js Y-up world space',
+    format: recMode === 'avatar' ? 'avatar bones: [] array {n, p, q}' : 'lm: flat array [x0,y0,z0,...] Three.js Y-up world space',
+    source: recMode,
     frames: recFrames,
   };
 
@@ -314,7 +418,11 @@ async function downloadZip() {
 
   const zip = new window.JSZip();
   zip.file(filename, JSON.stringify(jsonPayload));
-  zip.file('import_body_blender.py', buildBlenderScript(filename));
+  if (recMode === 'avatar') {
+    zip.file('import_avatar_blender.py', buildAvatarBlenderScript(filename));
+  } else {
+    zip.file('import_body_blender.py', buildBlenderScript(filename));
+  }
   zip.file('README.txt', readme);
 
   const blob = await zip.generateAsync({ type: 'blob' });

@@ -95,12 +95,12 @@
         <div class="sr" style="margin-top:9px">
           <div class="sh">
             <span class="sll">Scale</span>
-            <span class="sv" id="sv-sc">2.50</span>
+            <span class="sv" id="sv-sc">1.00</span>
           </div>
           <div class="sw">
             <div class="st"></div>
-            <div class="sf" id="sf-sc" style="width:35%"></div>
-            <input type="range" id="sl-sc" min="0.5" max="5.0" step="0.05" value="2.50" aria-label="Scale">
+            <div class="sf" id="sf-sc" style="width:11.11%"></div>
+            <input type="range" id="sl-sc" min="0.5" max="5.0" step="0.05" value="1.00" aria-label="Scale">
           </div>
         </div>
       </section>
@@ -108,7 +108,7 @@
       <section class="ps">
         <h3 class="sl">Avatar</h3>
         <label class="or"><span class="ol">Visibility</span>
-          <span class="tog"><input type="checkbox" id="t-av" checked><span class="tt"></span></span>
+          <span class="tog"><input type="checkbox" id="t-av"><span class="tt"></span></span>
         </label>
         <div class="sr" style="margin-top:9px">
           <input type="file" id="av-upload" accept=".glb,.gltf" style="display:none">
@@ -189,6 +189,14 @@
           <div id="rfc">0 FRAMES</div>
           <div id="rfps">~ fps</div>
         </div>
+      </div>
+      <div style="margin-top: 10px; margin-bottom: 5px;">
+        <label for="rec-source" style="font-size: 10px; color: var(--fg); letter-spacing: 1px;">RECORD SOURCE</label>
+        <select id="rec-source"
+          style="width: 100%; background: #222; color: #fff; border: 1px solid var(--border); padding: 4px; font-family: inherit; font-size: 11px; margin-top: 4px; outline: none; cursor: pointer;">
+          <option value="mediapipe">MediaPipe (Raw)</option>
+          <option value="avatar">3D Avatar Bones</option>
+        </select>
       </div>
       <button class="rbtn" id="recbtn">⏺ START RECORDING</button>
       <button class="rbtn" id="expbtn">⬇ EXPORT FOR BLENDER</button>

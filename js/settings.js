@@ -100,7 +100,7 @@ function initSliders() {
     DOM.bSm.textContent = smoothLabel(v);
   });
 
-  makeSlider('sc', 'scale', 0.5, 2.5, v => v.toFixed(2));
+  makeSlider('sc', 'scale', 0.5, 5.0, v => v.toFixed(2));
 
   makeSlider('mp', 'mpFPS', 5, 30, v => v + 'fps', v => {
     setMPRate(v);

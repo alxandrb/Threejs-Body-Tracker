@@ -6,7 +6,7 @@
 
 import { scene } from './renderer.js';
 
-export let isAvatarVisible = true;
+export let isAvatarVisible = false;
 export let avatarModel = null;
 const boneMap = {}; // Maps MediaPipe index (e.g., 13) to THREE.Bone instances
 const initialBinds = {}; // Stores initial quaternions to compute relative transforms

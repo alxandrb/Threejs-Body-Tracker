@@ -7,9 +7,10 @@
  * Stores frames in memory until export.js serialises them.
  */
 
-import { state }      from './state.js';
-import { smoothPos }  from './smoothing.js';
-import { DOM }        from './ui.js';
+import { state } from './state.js';
+import { smoothPos } from './smoothing.js';
+import { DOM } from './ui.js';
+import { avatarModel } from './avatar.js';
 
 // ─── Constants ──────────────────────────────────────────────────────
 const MAX_CAPTURE_FPS = 30;
@@ -17,10 +18,11 @@ const CAP_INTERVAL_MS = 1000 / MAX_CAPTURE_FPS;
 
 // ─── State ──────────────────────────────────────────────────────────
 export let recFrames = []; // exported so export.js can read it
-let _recStart  = 0;
-let _recDur    = 5;        // seconds (0 = unlimited)
-let _recTimer  = null;
-let _lastCap   = 0;
+export let recMode = 'mediapipe';
+let _recStart = 0;
+let _recDur = 5;        // seconds (0 = unlimited)
+let _recTimer = null;
+let _lastCap = 0;
 
 // ─── Cached DOM refs ────────────────────────────────────────────────
 // Resolved lazily (called after DOMContentLoaded)
@@ -30,15 +32,16 @@ function getRecDom() {
   if (_dom) return _dom;
   const $ = id => document.getElementById(id);
   _dom = {
-    rdot:   $('rd'),
-    rst:    $('rst'),
-    timer:  $('rtimer'),
+    rdot: $('rd'),
+    rst: $('rst'),
+    timer: $('rtimer'),
     fcount: $('rfc'),
-    ffps:   $('rfps'),
-    pbar:   $('rpb'),
+    ffps: $('rfps'),
+    pbar: $('rpb'),
     recbtn: $('recbtn'),
     expbtn: $('expbtn'),
-    hint:   $('rhint'),
+    hint: $('rhint'),
+    recSource: $('rec-source'),
   };
   return _dom;
 }
@@ -46,9 +49,9 @@ function getRecDom() {
 // ─── Public: start ───────────────────────────────────────────────────
 export function startRec() {
   const d = getRecDom();
-  recFrames  = [];
-  _recStart  = performance.now();
-  _lastCap   = 0;
+  recFrames = [];
+  _recStart = performance.now();
+  _lastCap = 0;
   state.isRecording = true;
 
   d.recbtn.textContent = '⏹ STOP RECORDING';
@@ -71,8 +74,8 @@ export function stopRec() {
   state.isRecording = false;
   clearInterval(_recTimer);
 
-  const d   = getRecDom();
-  const el  = recFrames.length > 0 ? recFrames[recFrames.length - 1].t : 0;
+  const d = getRecDom();
+  const el = recFrames.length > 0 ? recFrames[recFrames.length - 1].t : 0;
   const fps = (recFrames.length / Math.max(el, 0.001)).toFixed(1);
 
   d.recbtn.textContent = '⏺ START RECORDING';
@@ -98,20 +101,50 @@ export function captureFrame() {
   if (now - _lastCap < CAP_INTERVAL_MS) return;
   _lastCap = now;
 
-  recFrames.push({
-    t: +((now - _recStart) / 1000).toFixed(4),
+  const frameData = {
+    t: +((now - _recStart) / 1000).toFixed(4)
+  };
+
+  if (recMode === 'mediapipe') {
     // Flat array: [x0,y0,z0, x1,y1,z1, ...] — minimal JSON footprint
-    lm: smoothPos.flatMap(p => [
+    frameData.lm = smoothPos.flatMap(p => [
       +p.x.toFixed(5),
       +p.y.toFixed(5),
       +p.z.toFixed(5),
-    ]),
-  });
+    ]);
+  } else if (recMode === 'avatar') {
+    const bonesData = [];
+    if (avatarModel) {
+      avatarModel.traverse((child) => {
+        if (child.isBone) {
+          const pos = new THREE.Vector3();
+          const quat = new THREE.Quaternion();
+          child.getWorldPosition(pos);
+          child.getWorldQuaternion(quat);
+
+          bonesData.push({
+            n: child.name,
+            p: [+pos.x.toFixed(5), +pos.y.toFixed(5), +pos.z.toFixed(5)],
+            q: [+quat.x.toFixed(5), +quat.y.toFixed(5), +quat.z.toFixed(5), +quat.w.toFixed(5)]
+          });
+        }
+      });
+    }
+    frameData.bones = bonesData;
+  }
+
+  recFrames.push(frameData);
 }
 
 // ─── Public: init (wire up panel controls) ───────────────────────────
 export function initRecording() {
   const d = getRecDom();
+
+  if (d.recSource) {
+    d.recSource.addEventListener('change', (e) => {
+      recMode = e.target.value;
+    });
+  }
 
   d.recbtn.addEventListener('click', () => {
     state.isRecording ? stopRec() : startRec();
@@ -131,12 +164,12 @@ export function initRecording() {
 // ─── Internal: UI tick (runs every 100ms while recording) ───────────
 function _tickUI() {
   if (!state.isRecording) return;
-  const d  = getRecDom();
+  const d = getRecDom();
   const el = (performance.now() - _recStart) / 1000;
-  const m  = Math.floor(el / 60);
-  const s  = Math.floor(el % 60);
+  const m = Math.floor(el / 60);
+  const s = Math.floor(el % 60);
 
-  d.timer.textContent  = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+  d.timer.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
   d.fcount.textContent = recFrames.length + ' FRAMES';
 
   if (el > 0) {

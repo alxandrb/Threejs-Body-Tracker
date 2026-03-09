@@ -18,8 +18,15 @@
   white-space: nowrap;
 }
 
-#sbtn:hover { border-color: var(--cyan); color: var(--cyan); }
-#sbtn.open  { border-color: var(--magenta); color: var(--magenta); }
+#sbtn:hover {
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+
+#sbtn.open {
+  border-color: var(--magenta);
+  color: var(--magenta);
+}
 
 /* ─── Settings panel ─────────────────────────────────────────────── */
 #spanel {
@@ -37,16 +44,24 @@
 }
 
 #spanel.open {
-  max-height: 650px;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
   border-color: rgba(0, 255, 65, 0.22);
 }
 
 /* Panel inner padding */
-.pi { padding: 14px 20px 20px; }
+.pi {
+  padding: 14px 20px 20px;
+}
 
 /* Panel section */
-.ps { margin-bottom: 18px; }
-.ps:last-child { margin-bottom: 0; }
+.ps {
+  margin-bottom: 18px;
+}
+
+.ps:last-child {
+  margin-bottom: 0;
+}
 
 /* Section label */
 .sl {
@@ -68,7 +83,9 @@
   cursor: pointer;
 }
 
-.or:hover .ol { color: rgba(0, 255, 65, 0.85); }
+.or:hover .ol {
+  color: rgba(0, 255, 65, 0.85);
+}
 
 .ol {
   font-size: 15px;
@@ -87,7 +104,11 @@
   flex-shrink: 0;
 }
 
-.tog input { opacity: 0; width: 0; height: 0; }
+.tog input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
 
 .tt {
   position: absolute;
@@ -111,19 +132,21 @@
   transition: transform 0.2s ease, background 0.18s;
 }
 
-.tog input:checked + .tt {
+.tog input:checked+.tt {
   background: rgba(0, 255, 65, 0.1);
   border-color: var(--cyan);
 }
 
-.tog input:checked + .tt::after {
+.tog input:checked+.tt::after {
   transform: translateX(17px);
   background: var(--cyan);
   box-shadow: 0 0 6px var(--cyan);
 }
 
 /* ─── Slider rows ─────────────────────────────────────────────────── */
-.sr { padding: 4px 0; }
+.sr {
+  padding: 4px 0;
+}
 
 .sh {
   display: flex;

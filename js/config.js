@@ -47,7 +47,7 @@ export const opts = {
   smooth: 0.18,
 
   /** World-space scale factor for landmark positions */
-  scale: 2.50,
+  scale: 1.0,
 
   /** Visibility toggles */
   joints: true,
